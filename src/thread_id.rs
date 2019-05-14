@@ -6,7 +6,7 @@
 // copied, modified, or distributed except according to those terms.
 
 use std::collections::BinaryHeap;
-use std::sync::Mutex;
+use std::sync::SgxMutex;
 use std::usize;
 
 // Thread ID manager which allocates thread IDs. It attempts to aggressively
@@ -37,7 +37,7 @@ impl ThreadIdManager {
     }
 }
 lazy_static! {
-    static ref THREAD_ID_MANAGER: Mutex<ThreadIdManager> = Mutex::new(ThreadIdManager::new());
+    static ref THREAD_ID_MANAGER: SgxMutex<ThreadIdManager> = SgxMutex::new(ThreadIdManager::new());
 }
 
 // Non-zero integer which is unique to the current thread while it is running.

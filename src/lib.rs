@@ -70,6 +70,16 @@
 
 #![warn(missing_docs)]
 
+#![cfg_attr(not(target_env = "sgx"), no_std)]
+#![cfg_attr(target_env = "sgx", feature(rustc_private))]
+
+#[cfg(not(target_env = "sgx"))]
+#[macro_use]
+extern crate sgx_tstd as std;
+
+use std::prelude::v1::*;
+
+
 #[macro_use]
 extern crate lazy_static;
 
@@ -84,7 +94,7 @@ use std::fmt;
 use std::marker::PhantomData;
 use std::panic::UnwindSafe;
 use std::sync::atomic::{AtomicPtr, AtomicUsize, Ordering};
-use std::sync::Mutex;
+use std::sync::SgxMutex;
 use unreachable::{UncheckedOptionExt, UncheckedResultExt};
 
 /// Thread-local variable wrapper
@@ -97,7 +107,7 @@ pub struct ThreadLocal<T: Send> {
     // Lock used to guard against concurrent modifications. This is only taken
     // while writing to the table, not when reading from it. This also guards
     // the counter for the total number of values in the hash table.
-    lock: Mutex<usize>,
+    lock: SgxMutex<usize>,
 
     // PhantomData to indicate that we logically own T
     marker: PhantomData<T>,
@@ -176,7 +186,7 @@ impl<T: Send> ThreadLocal<T> {
         };
         ThreadLocal {
             table: AtomicPtr::new(Box::into_raw(Box::new(table))),
-            lock: Mutex::new(0),
+            lock: SgxMutex::new(0),
             marker: PhantomData,
         }
     }
